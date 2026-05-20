@@ -1503,7 +1503,11 @@ function showDoneOverlay() {
 // =========================================================
 // SUBMIT
 // =========================================================
+let _submitInFlight = false;
 async function submitForm() {
+  // Guard against double-clicks while a submission is in flight.
+  if (_submitInFlight) return;
+
   // Validate required
   const missing = [];
   flatItems().forEach(q => {
@@ -1527,7 +1531,19 @@ async function submitForm() {
     showToast('Apps Script URL not configured. Cannot submit yet — see deployment instructions in apps_script.gs.', 5000);
     return;
   }
+
+  // Lock the submit button so a second click doesn't create a duplicate submission.
+  _submitInFlight = true;
+  const btn = document.getElementById('submitBtn');
+  const originalLabel = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    btn.style.opacity = '0.65';
+    btn.style.cursor = 'wait';
+  }
   showToast('Submitting…');
+
   try {
     const res = await postJson({
       action: 'submit',
@@ -1544,10 +1560,25 @@ async function submitForm() {
       showDoneOverlay();
     } else {
       showToast('Submission failed. Please try again.', 4000);
+      // Re-enable submit so they can retry
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        btn.style.opacity = '';
+        btn.style.cursor = '';
+      }
+      _submitInFlight = false;
     }
   } catch(e) {
     console.error(e);
     showToast('Network error during submission.', 4000);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    }
+    _submitInFlight = false;
   }
 }
 document.getElementById('submitBtn').addEventListener('click', submitForm);
