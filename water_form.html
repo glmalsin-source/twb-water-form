@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Well Build — Water Filtration Inquiry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          twb: {
+            green: '#1E4430',
+            green2: '#2B5C3F',
+            sage: '#7A9E8A',
+            sage2: '#C5D8CC',
+            copper: '#B07D4A',
+            copper2: '#C4915E',
+            cream: '#FAF8F4',
+            cream2: '#FEFDFB',
+            blue: '#A8C8D6',
+            blue2: '#D4E8EF',
+            ink: '#2A2A2A',
+            text: '#3A3A3A',
+            mute: '#6B6B6B',
+            clay: '#A8593E'
+          }
+        },
+        fontFamily: {
+          serif: ['"DM Serif Display"', 'serif'],
+          sans: ['"DM Sans"', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { background:#FAF8F4; color:#3A3A3A; font-family:'DM Sans',system-ui,sans-serif; }
+  h1,h2,h3,.serif { font-family:'DM Serif Display', serif; color:#1E4430; }
+  .field-input {
+    width:100%; border:1px solid #C5D8CC; background:#FEFDFB; border-radius:8px;
+    padding:10px 12px; color:#2A2A2A; transition:border-color .15s, box-shadow .15s;
+  }
+  .field-input:focus { outline:none; border-color:#2B5C3F; box-shadow:0 0 0 3px rgba(43,92,63,.15); }
+  .field-input::placeholder { color:#9CA8A0; }
+  .chip {
+    display:inline-flex; align-items:center; gap:8px; padding:8px 14px;
+    border:1px solid #C5D8CC; background:#FEFDFB; border-radius:999px; cursor:pointer;
+    transition:all .12s ease; font-size:14px;
+  }
+  .chip:hover { border-color:#7A9E8A; background:#F1F6F2; }
+  .chip[aria-pressed="true"] {
+    background:#1E4430; color:#FEFDFB; border-color:#1E4430;
+  }
+  .yn { min-width:78px; justify-content:center; font-weight:500; }
+  .btn-primary {
+    background:#1E4430; color:#FEFDFB; padding:10px 18px; border-radius:8px; font-weight:600;
+    transition:background .15s, transform .05s;
+  }
+  .btn-primary:hover { background:#2B5C3F; }
+  .btn-primary:active { transform:translateY(1px); }
+  .btn-secondary {
+    background:#FEFDFB; color:#1E4430; padding:10px 18px; border-radius:8px; font-weight:600;
+    border:1px solid #C5D8CC;
+  }
+  .btn-secondary:hover { border-color:#7A9E8A; background:#F1F6F2; }
+  .btn-ghost {
+    color:#6B6B6B; padding:8px 12px; border-radius:8px; font-weight:500;
+  }
+  .btn-ghost:hover { color:#1E4430; background:#F1F6F2; }
+  .btn-copper {
+    background:#B07D4A; color:#FEFDFB; padding:10px 18px; border-radius:8px; font-weight:600;
+  }
+  .btn-copper:hover { background:#C4915E; }
+  .sec-link {
+    display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px;
+    color:#3A3A3A; cursor:pointer; font-size:14px; line-height:1.3;
+  }
+  .sec-link:hover { background:#F1F6F2; }
+  .sec-link.active { background:#C5D8CC; color:#1E4430; font-weight:600; }
+  .sec-link.skipped { opacity:.55; text-decoration:line-through; }
+  .sec-dot {
+    flex-shrink:0; width:10px; height:10px; border-radius:999px;
+    background:#E8E0D4; border:1px solid #C5D8CC;
+  }
+  .sec-link[data-status="started"] .sec-dot { background:#A8C8D6; border-color:#A8C8D6; }
+  .sec-link[data-status="complete"] .sec-dot { background:#1E4430; border-color:#1E4430; }
+  .sec-link[data-status="skipped"] .sec-dot { background:#E8E0D4; border-color:#C5D8CC; }
+  .sec-num { width:22px; flex-shrink:0; text-align:right; color:#6B6B6B; font-variant-numeric:tabular-nums; font-size:12px; }
+  .progress-bar { background:#E8E0D4; height:6px; border-radius:999px; overflow:hidden; }
+  .progress-fill { background:linear-gradient(90deg,#2B5C3F,#7A9E8A); height:100%; transition:width .3s ease; }
+  .question-card {
+    background:#FEFDFB; border:1px solid rgba(123,158,138,.25); border-radius:14px;
+    padding:18px 20px; margin-bottom:14px; transition:border-color .15s;
+  }
+  .question-card:focus-within { border-color:#7A9E8A; }
+  .qlabel { font-weight:600; color:#2A2A2A; margin-bottom:6px; }
+  .qhelper { font-size:13px; color:#6B6B6B; margin-bottom:10px; }
+  .req { color:#A8593E; margin-left:4px; }
+  .save-pill {
+    font-size:12px; color:#6B6B6B; padding:4px 10px; border-radius:999px;
+    background:#F1F6F2; display:inline-flex; align-items:center; gap:6px;
+  }
+  .toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:#1E4430; color:#FEFDFB; padding:12px 20px; border-radius:10px;
+    box-shadow:0 10px 40px rgba(30,68,48,.25); z-index:100;
+    opacity:0; transition:opacity .25s, transform .25s;
+    pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(-6px); }
+  .overlay {
+    position:fixed; inset:0; background:rgba(30,68,48,.55); display:flex;
+    align-items:center; justify-content:center; padding:20px; z-index:50;
+    backdrop-filter:blur(4px);
+  }
+  .overlay-card {
+    background:#FEFDFB; border-radius:18px; max-width:620px; width:100%;
+    padding:32px; max-height:90vh; overflow:auto;
+  }
+  .subhead {
+    font-family:'DM Serif Display', serif; color:#1E4430; font-size:18px;
+    border-top:1px dashed #C5D8CC; padding-top:18px; margin:14px 4px 4px;
+  }
+  .subhead:first-child { border-top:0; padding-top:0; }
+  details > summary { cursor:pointer; list-style:none; }
+  details > summary::-webkit-details-marker { display:none; }
+  @media print {
+    .no-print { display:none !important; }
+    body { background:#fff; }
+    .question-card { break-inside:avoid; }
+  }
+  /* Scrollbar styling */
+  .nice-scroll::-webkit-scrollbar { width:8px; }
+  .nice-scroll::-webkit-scrollbar-track { background:transparent; }
+  .nice-scroll::-webkit-scrollbar-thumb { background:#C5D8CC; border-radius:4px; }
+  .nice-scroll::-webkit-scrollbar-thumb:hover { background:#7A9E8A; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ============ INTRO OVERLAY ============ -->
+<div id="introOverlay" class="overlay no-print hidden">
+  <div class="overlay-card">
+    <img src="twb_logo.png"
+         alt="The Well Build"
+         class="block h-20 w-auto mb-3">
+    <h1 class="text-3xl mb-3">Let's Find the Right Water Solution</h1>
+    <p class="text-twb-text mb-4">
+      Whole-house water filtration that fits your home, your water source, and your goals.
+      This takes about 3 minutes — we'll use your answers to recommend the best approach for your specific situation.
+    </p>
+    <ul class="space-y-2 text-sm text-twb-text mb-5">
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>Roughly <strong>3 minutes</strong> to fill out.</span></li>
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>You'll get a <strong>tailored product recommendation</strong> at the end.</span></li>
+    </ul>
+    <div class="flex flex-wrap gap-3">
+      <button id="introStart" class="btn-primary">Start →</button>
+    </div>
+    <p class="text-xs text-twb-mute mt-5">
+      © The Well Build™. We'll only use the information you share to contact you about your project.
+    </p>
+  </div>
+</div>
+
+<!-- ============ COMPLETION OVERLAY (outcome-aware) ============ -->
+<div id="doneOverlay" class="overlay no-print hidden">
+  <div class="overlay-card text-center">
+    <img src="twb_logo.png"
+         alt="The Well Build"
+         class="mx-auto h-20 w-auto mb-3">
+    <h1 id="doneTitle" class="text-3xl mb-3"></h1>
+    <p id="doneBody" class="text-twb-text mb-5 text-left"></p>
+    <div id="doneProducts" class="mb-5 text-left"></div>
+    <div id="doneCta" class="mb-5"></div>
+    <button id="doneClose" class="btn-secondary">Close</button>
+  </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="bg-white border-b border-twb-sage2 sticky top-0 z-30 no-print">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-3">
+        <div class="text-xs uppercase tracking-widest text-twb-copper font-semibold">The Well Build</div>
+        <span class="text-twb-sage2">•</span>
+        <h1 class="text-base sm:text-lg serif truncate">Water Filtration Inquiry</h1>
+      </div>
+      <div class="mt-2 flex items-center gap-3">
+        <div class="progress-bar flex-1 max-w-md"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
+        <div id="progressLabel" class="text-xs text-twb-mute font-medium tabular-nums">0%</div>
+      </div>
+    </div>
+    <div class="hidden sm:flex items-center gap-2">
+      <span id="saveStatus" class="save-pill"><span>●</span> Not started</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MAIN LAYOUT ============ -->
+<div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+
+  <!-- Sidebar (collapsible on mobile) -->
+  <aside class="lg:sticky lg:top-[88px] lg:self-start no-print">
+    <!-- Mobile-only: tappable header that expands the sections panel -->
+    <button id="sidebarToggle" class="lg:hidden w-full bg-white border border-twb-sage2 rounded-2xl px-4 py-3 text-left flex items-center justify-between" aria-expanded="false">
+      <span class="font-semibold text-twb-green text-sm">Browse sections &amp; search</span>
+      <span id="sidebarToggleIcon" class="text-twb-mute text-xs">▼</span>
+    </button>
+    <div id="sidebarPanel" class="hidden lg:block mt-3 lg:mt-0 bg-white border border-twb-sage2 rounded-2xl p-3 lg:max-h-[calc(100vh-110px)] overflow-auto nice-scroll">
+      <div class="text-xs uppercase tracking-wider text-twb-mute font-semibold px-2 pt-1 pb-2">Sections</div>
+      <nav id="sectionNav" class="space-y-0.5"></nav>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+    <div id="sectionRoot"></div>
+
+    <!-- Section nav buttons -->
+    <div class="mt-6 flex flex-wrap items-center gap-3 no-print">
+      <button id="prevBtn" class="btn-secondary">← Previous</button>
+      <div class="flex-1"></div>
+      <button id="nextBtn" class="btn-primary">Next →</button>
+    </div>
+
+    <!-- Submit button (revealed on last section) -->
+    <div id="submitWrap" class="mt-6 hidden">
+      <div class="bg-twb-cream2 border border-twb-sage2 rounded-2xl p-6">
+        <h2 class="text-2xl mb-2">Ready to submit?</h2>
+        <p class="text-twb-text mb-4">
+          Double-check that the required fields in <strong>Contact Information</strong> are filled out.
+          When you submit, your inquiry goes straight to The Well Build team for review.
+        </p>
+        <button id="submitBtn" class="btn-copper text-base">Submit inquiry</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ============ SCHEMA ============ -->
+<script>
+// Auto-generated water filtration schema v2 on 2026-05-20
+// Source: Typeform l2YhrJyj + Greg's approved cuts/edits.
+const FORM_SCHEMA = {
+  title: `The Well Build — Water Filtration Inquiry`,
+  description: `Let's find the right water solution for your home. This takes about 3 minutes — we'll use your answers to recommend the best approach for your specific situation.`,
+  completion: {},
+  outcomes: {
+    renter_bail: {
+      title: `Thanks for your interest`,
+      body: `Whole-house filtration requires property ownership and is a meaningful investment that benefits the property owner. While we can't help with whole-home filtration in a rental, we'd recommend an under-sink reverse osmosis system or shower filter instead. If your situation changes, we're here when you're ready.`,
+      cta: null
+    },
+    needs_more_info: {
+      title: `Thanks — let's talk`,
+      body: `Based on your answers, we need a bit more information before we can recommend the right solution for you. Schedule a call with us at the link below, or sit tight — someone from our team will reach out within 24–48 hours. Heads up: if you hear from WateRx, that's us too. Check your inbox (and spam folder) for next steps.`,
+      cta: {
+        label: `Schedule a call →`,
+        url: `https://calendar.google.com/appointments/schedules/AcZssZ3HmX1HaWdxYsZi0dmHdH3l7yaNn9oh1cSeGx8x0CsSTmOUYg1rJFi_8pdkTarUwhxSO5vWXpLu`
+      }
+    },
+    wh1: {
+      title: `Thank you — here's our recommendation`,
+      body: `Based on your answers, we recommend the WH1 Whole House Water Filtration System. Someone from our team will be in touch within 24–48 hours to walk you through it.`,
+      product: {
+        label: `WH1 Whole House Water Filtration System →`,
+        url: `https://www.thewellbuild.com/products/wh1-1500-sq-ft-whole-house-water-filtration-system`
+      },
+      cta: {
+        label: `Schedule a call →`,
+        url: `https://calendar.app.google/6vUpBit5eWXmumVp7`
+      }
+    },
+    wh5_wh10: {
+      title: `Thank you — here's our recommendation`,
+      body: `Based on your answers, we recommend the WH5 or WH10 Whole House Water Filtration System. Someone from our team will reach out within 24–48 hours to confirm the right fit.`,
+      products: [
+        {
+          label: `WH5 Whole House System →`,
+          url: `https://www.thewellbuild.com/products/wh5-up-to-3-000-sq-ft-whole-house-water-filtration-system-base-model`
+        },
+        {
+          label: `WH10 Whole House System →`,
+          url: `https://www.thewellbuild.com/products/wh10-up-to-5-000-sq-ft-whole-house-water-filtration-system-base-model`
+        }
+      ],
+      cta: {
+        label: `Schedule a call →`,
+        url: `https://calendar.app.google/6vUpBit5eWXmumVp7`
+      }
+    },
+    wh10_wh20: {
+      title: `Thank you — here's our recommendation`,
+      body: `Based on your answers, we recommend the WH10 or WH20 Whole House Water Filtration System. Someone from our team will reach out within 24–48 hours to confirm the right fit.`,
+      products: [
+        {
+          label: `WH10 Whole House System →`,
+          url: `https://www.thewellbuild.com/products/wh10-up-to-5-000-sq-ft-whole-house-water-filtration-system-base-model`
+        },
+        {
+          label: `WH20 Whole House System →`,
+          url: `https://www.thewellbuild.com/products/wh20-5-000-sq-ft-whole-house-water-filtration-system-base-model`
+        }
+      ],
+      cta: {
+        label: `Schedule a call →`,
+        url: `https://calendar.google.com/appointments/schedules/AcZssZ3HmX1HaWdxYsZi0dmHdH3l7yaNn9oh1cSeGx8x0CsSTmOUYg1rJFi_8pdkTarUwhxSO5vWXpLu`
+      }
+    }
+  },
+  sections: [
+    {
+      id: `qualifiers`,
+      title: `A Few Quick Questions`,
+      description: `Two fast questions so we can route your inquiry correctly.`,
+      items: [
+        {
+          type: `radio`,
+          label: `Do you own or rent your property?`,
+          required: true,
+          choices: [
+            `Own`,
+            `Rent`
+          ],
+          id: `own_or_rent`
+        },
+        {
+          type: `radio`,
+          label: `What type of water does your home have?`,
+          required: true,
+          choices: [
+            `Municipal (city water)`,
+            `Well water`,
+            `Not sure`
+          ],
+          id: `water_source`
+        }
+      ]
+    },
+    {
+      id: `home_size`,
+      title: `Your Home`,
+      description: `These help us size the right system for you.`,
+      items: [
+        {
+          type: `radio`,
+          label: `How many bathrooms are in your home?`,
+          required: true,
+          choices: [
+            `1–2`,
+            `3–4`,
+            `5+`
+          ],
+          id: `num_bathrooms`
+        },
+        {
+          type: `radio`,
+          label: `How many occupants live in the home?`,
+          required: true,
+          choices: [
+            `1–2`,
+            `3–4`,
+            `5+`
+          ],
+          id: `num_occupants`
+        }
+      ]
+    },
+    {
+      id: `current_situation`,
+      title: `Your Current Water Situation`,
+      description: ``,
+      items: [
+        {
+          type: `checkboxes`,
+          label: `Are you experiencing any of these issues? (Select all that apply)`,
+          required: true,
+          choices: [
+            `Bad taste or odor`,
+            `Dry skin or hair issues`,
+            `Staining on fixtures or laundry`,
+            `Hard water / scale buildup`,
+            `Health concerns about water quality`,
+            `Recent water quality report raised concerns`,
+            `Currently building or renovating`,
+            `None — just being proactive about water quality`
+          ],
+          allowOther: true,
+          id: `current_issues`
+        },
+        {
+          type: `checkboxes`,
+          label: `Do you currently have any water treatment equipment? (Select all that apply)`,
+          required: true,
+          choices: [
+            `Water softener`,
+            `Under-sink filter`,
+            `Whole house filter`,
+            `Reverse osmosis system`,
+            `None`
+          ],
+          allowOther: true,
+          id: `existing_treatment`
+        }
+      ]
+    },
+    {
+      id: `timeline_budget`,
+      title: `Timeline & Investment`,
+      description: ``,
+      items: [
+        {
+          type: `radio`,
+          label: `What's your timeline for moving forward?`,
+          required: true,
+          choices: [
+            `ASAP (within 30 days)`,
+            `1–3 months`,
+            `3–6 months`,
+            `Just researching for now`
+          ],
+          id: `timeline`
+        },
+        {
+          type: `radio`,
+          label: `Whole-house filtration typically runs $3,000–$10,000+, depending on home size and water source. Does that range feel reasonable to you?`,
+          required: true,
+          choices: [
+            `Yes — that makes sense`,
+            `I need to understand more about what's included`,
+            `This is higher than I expected`,
+            `Prefer not to answer right now`
+          ],
+          id: `budget_alignment`
+        }
+      ]
+    },
+    {
+      id: `context`,
+      title: `A Little More Context`,
+      description: `Optional but helpful — the more specific, the better we can help.`,
+      items: [
+        {
+          type: `paragraph`,
+          label: `What's prompting you to look into whole-house water filtration right now?`,
+          helper: `There are no wrong answers — even a sentence is fine.`,
+          required: false,
+          id: `whats_prompting`
+        }
+      ]
+    },
+    {
+      id: `contact`,
+      title: `Contact Information`,
+      description: `How should we reach you about your inquiry?`,
+      items: [
+        {
+          type: `short`,
+          label: `Full name`,
+          required: true,
+          id: `full_name`
+        },
+        {
+          type: `short`,
+          label: `Email address`,
+          required: true,
+          id: `email_address`
+        },
+        {
+          type: `short`,
+          label: `Phone number`,
+          required: true,
+          id: `phone_number`
+        },
+        {
+          type: `short`,
+          label: `Property address`,
+          required: true,
+          helper: `So we can confirm we service your area and understand your property type.`,
+          id: `address`
+        },
+        {
+          type: `radio`,
+          label: `Best time to reach you`,
+          required: true,
+          choices: [
+            `Morning`,
+            `Afternoon`,
+            `Evening`,
+            `Weekends`,
+            `Anytime`
+          ],
+          id: `best_time`
+        },
+        {
+          type: `checkboxes`,
+          label: `How should we reach you? (Select all that apply)`,
+          helper: `Checking 'Text' grants permission to text you about your inquiry.`,
+          required: true,
+          choices: [
+            `Email`,
+            `Phone (voice)`,
+            `Text`
+          ],
+          id: `contact_methods`
+        },
+        {
+          type: `radio`,
+          label: `How did you hear about The Well Build / WateRx?`,
+          required: true,
+          choices: [
+            `Google search`,
+            `Instagram`,
+            `Facebook`,
+            `Referral from friend/family`,
+            `Referral from another professional`,
+            `Podcast or article`,
+            `Other social media`
+          ],
+          allowOther: true,
+          id: `how_heard`
+        },
+        {
+          type: `paragraph`,
+          label: `Anything else you'd like us to know?`,
+          required: false,
+          id: `anything_else`
+        }
+      ]
+    }
+  ]
+};
+
+// =========================================================
+// CONFIG — paste your Apps Script Web App URL here after deploying intake_apps_script.gs
+// (separate deployment from the contractor form)
+// =========================================================
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCvfhzVlFQhEPdEzX3lQ-X3U8IO8T97FdoWyTgYxZrezTQyJy5J39Bvggp2jpO5aso/exec";
+
+// =========================================================
+// Optional: Google Places Autocomplete for the Address field
+// Get a key at https://console.cloud.google.com → enable "Places API (New)"
+// Restrict the key by HTTP referrer to your domains (builderform.thewellbuild.com,
+// glmalsin-source.github.io, localhost) so it can't be abused.
+// Leave blank to skip — browser-saved address autofill still works.
+// =========================================================
+const GOOGLE_PLACES_API_KEY = "";
+
+// =========================================================
+// STATE
+// =========================================================
+const STATE = {
+  responses: {},          // { questionId: value }
+  skipped: {},            // { sectionId: true }
+  currentSection: 0,      // index
+  draftId: null,
+  email: null,            // builder email (auto-detected from email_address field)
+  lastSavedAt: null
+};
+
+const STORAGE_KEY = 'twb_water_form_v1';
+
+// No Profile mirrors needed for the intake form (no Project Profile section).
+const PROFILE_MIRRORS = {};
+
+// =========================================================
+// HELPERS
+// =========================================================
+function el(tag, attrs={}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k,'');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) c.forEach(x=>e.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+    else e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return e;
+}
+
+function showToast(msg, ms=2400) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+function flatItems() {
+  const out = [];
+  FORM_SCHEMA.sections.forEach((s, si) => {
+    s.items.forEach(it => {
+      if (it.type !== 'subheading') out.push({...it, sectionIndex: si, sectionId: s.id});
+    });
+  });
+  return out;
+}
+
+function isShown(item) {
+  if (!item.showIf) return true;
+  const v = STATE.responses[item.showIf.field];
+  if (item.showIf.equals !== undefined) return v === item.showIf.equals;
+  if (item.showIf.notEquals !== undefined) return v !== item.showIf.notEquals && v != null && v !== '';
+  return true;
+}
+
+// A section is auto-hidden when its skipIf rule matches the user's profile answers.
+// User can override with the "Show all sections" toggle.
+function isSectionAutoHidden(section) {
+  if (STATE.showAllSections) return false;
+  if (!section.skipIf) return false;
+  const v = STATE.responses[section.skipIf.field];
+  if (section.skipIf.equals !== undefined) return v === section.skipIf.equals;
+  if (section.skipIf.notEquals !== undefined) return v !== section.skipIf.notEquals && v != null && v !== '';
+  return false;
+}
+
+function questionIsAnswered(q) {
+  const v = STATE.responses[q.id];
+  if (v == null) return false;
+  if (Array.isArray(v)) return v.length > 0;
+  return String(v).trim() !== '';
+}
+
+function sectionStatus(sIdx) {
+  if (STATE.skipped[FORM_SCHEMA.sections[sIdx].id]) return 'skipped';
+  const items = FORM_SCHEMA.sections[sIdx].items.filter(it => it.type !== 'subheading' && isShown(it));
+  if (items.length === 0) return 'empty';
+  const answered = items.filter(questionIsAnswered).length;
+  if (answered === 0) return 'empty';
+  if (answered === items.length) return 'complete';
+  return 'started';
+}
+
+function overallProgress() {
+  const all = flatItems().filter(isShown).filter(it => {
+    const sec = FORM_SCHEMA.sections[it.sectionIndex];
+    return !isSectionAutoHidden(sec);
+  });
+  const total = all.length;
+  if (!total) return 0;
+  // Skipped sections count as "done" for the progress bar
+  let answered = 0;
+  for (const it of all) {
+    if (STATE.skipped[it.sectionId]) { answered++; continue; }
+    if (questionIsAnswered(it)) answered++;
+  }
+  return Math.round((answered / total) * 100);
+}
+
+// =========================================================
+// PERSISTENCE
+// =========================================================
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      responses: STATE.responses,
+      skipped: STATE.skipped,
+      currentSection: STATE.currentSection,
+      draftId: STATE.draftId,
+      email: STATE.email,
+      showAllSections: !!STATE.showAllSections
+    }));
+    STATE.lastSavedAt = Date.now();
+    updateSaveStatus();
+  } catch(e) { console.warn('localStorage save failed', e); }
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    Object.assign(STATE, d);
+    return true;
+  } catch(e) { return false; }
+}
+
+function updateSaveStatus() {
+  const p = document.getElementById('saveStatus');
+  if (!STATE.lastSavedAt) {
+    p.innerHTML = '<span>○</span> Not started';
+    return;
+  }
+  const ago = Math.round((Date.now()-STATE.lastSavedAt)/1000);
+  const txt = ago < 5 ? 'Saved just now' : (ago < 60 ? `Saved ${ago}s ago` : `Saved ${Math.round(ago/60)}m ago`);
+  p.innerHTML = '<span style="color:#2B5C3F">●</span> ' + txt;
+}
+setInterval(updateSaveStatus, 15000);
+
+// =========================================================
+// ADDRESS AUTOCOMPLETE
+// Zero-config default: Photon (OpenStreetMap, no API key required).
+// If GOOGLE_PLACES_API_KEY is set, Google Places is used instead (higher quality suggestions).
+// =========================================================
+let _placesScriptLoaded = false;
+let _placesLoading = false;
+function loadGoogleMapsScript() {
+  if (!GOOGLE_PLACES_API_KEY || _placesScriptLoaded || _placesLoading) return;
+  _placesLoading = true;
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_PLACES_API_KEY)}&libraries=places&loading=async&v=weekly`;
+  s.async = true; s.defer = true;
+  s.onload = () => { _placesScriptLoaded = true; attachGooglePlaces(); };
+  s.onerror = () => { console.warn('Google Maps script failed to load'); _placesLoading = false; };
+  document.head.appendChild(s);
+}
+function attachGooglePlaces() {
+  if (!_placesScriptLoaded || !window.google || !google.maps || !google.maps.places) return;
+  const input = document.getElementById('f_address');
+  if (!input || input.dataset.placesAttached === '1') return;
+  try {
+    const ac = new google.maps.places.Autocomplete(input, {
+      types: ['address'],
+      componentRestrictions: { country: ['us', 'ca'] },
+      fields: ['formatted_address']
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      const v = (place && place.formatted_address) || input.value;
+      setValue('address', v);
+      input.value = v;
+    });
+    input.dataset.placesAttached = '1';
+  } catch (e) {
+    console.warn('Places autocomplete attach failed', e);
+  }
+}
+
+// --- Photon fallback (OpenStreetMap, no key) -------------
+let _photonTimer = null;
+let _photonActiveIndex = -1;
+function attachPhotonAutocomplete() {
+  const input = document.getElementById('f_address');
+  if (!input || input.dataset.photonAttached === '1') return;
+  input.dataset.photonAttached = '1';
+  input.setAttribute('autocomplete', 'off');  // disable browser autofill which fights the dropdown
+  // Dropdown element
+  const dropdown = document.createElement('div');
+  dropdown.id = 'address-dropdown';
+  dropdown.className = 'hidden';
+  dropdown.style.cssText = [
+    'position:absolute','background:#FEFDFB','border:1px solid #C5D8CC','border-radius:10px',
+    'box-shadow:0 10px 30px rgba(30,68,48,.12)','z-index:40','margin-top:4px',
+    'max-height:280px','overflow-y:auto','font-size:14px'
+  ].join(';');
+  // Insert dropdown positioned relative to the input's parent (the question card)
+  input.parentElement.style.position = 'relative';
+  input.parentElement.appendChild(dropdown);
+
+  function closeDropdown() {
+    dropdown.classList.add('hidden');
+    dropdown.innerHTML = '';
+    _photonActiveIndex = -1;
+  }
+
+  function renderResults(items) {
+    dropdown.innerHTML = '';
+    _photonActiveIndex = -1;
+    if (!items.length) { closeDropdown(); return; }
+    const rect = input.getBoundingClientRect();
+    const parentRect = input.parentElement.getBoundingClientRect();
+    dropdown.style.left = (rect.left - parentRect.left) + 'px';
+    dropdown.style.top = (rect.bottom - parentRect.top) + 'px';
+    dropdown.style.width = rect.width + 'px';
+    items.forEach((it, idx) => {
+      const row = document.createElement('div');
+      row.className = 'photon-row';
+      row.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #F1F0EB;line-height:1.35';
+      const primary = document.createElement('div');
+      primary.textContent = it.primary;
+      primary.style.cssText = 'color:#2A2A2A;font-weight:500';
+      const secondary = document.createElement('div');
+      secondary.textContent = it.secondary;
+      secondary.style.cssText = 'color:#6B6B6B;font-size:12px;margin-top:2px';
+      row.appendChild(primary);
+      row.appendChild(secondary);
+      row.onmouseenter = () => { _photonActiveIndex = idx; highlight(); };
+      row.onmousedown = (e) => {
+        e.preventDefault();
+        input.value = it.full;
+        setValue('address', it.full);
+        closeDropdown();
+      };
+      dropdown.appendChild(row);
+    });
+    dropdown.classList.remove('hidden');
+  }
+
+  function highlight() {
+    Array.from(dropdown.children).forEach((c, i) => {
+      c.style.background = i === _photonActiveIndex ? '#F1F6F2' : 'transparent';
+    });
+  }
+
+  async function fetchSuggestions(q) {
+    if (!q || q.length < 3) { closeDropdown(); return; }
+    try {
+      // Photon is an open-source geocoder (OpenStreetMap-based) — no key, CORS-enabled.
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=en&osm_tag=place&osm_tag=!tourism`;
+      // Fall back to broader search if that returns nothing:
+      const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=en`);
+      if (!res.ok) throw new Error('bad status');
+      const j = await res.json();
+      const items = (j.features || []).map(f => {
+        const p = f.properties || {};
+        // Build primary/secondary display
+        const street = [p.housenumber, p.street].filter(Boolean).join(' ');
+        const line1 = street || p.name || '';
+        const locality = [p.city, p.state, p.country, p.postcode].filter(Boolean).join(', ');
+        const primary = line1 || (p.name || '');
+        const secondary = locality || (p.country || '');
+        const full = [line1 || p.name, locality].filter(Boolean).join(', ');
+        return { primary, secondary, full };
+      }).filter(x => x.primary);
+      renderResults(items);
+    } catch (e) {
+      // Silent fail — user just sees no suggestions
+      closeDropdown();
+    }
+  }
+
+  input.addEventListener('input', (e) => {
+    const q = e.target.value;
+    clearTimeout(_photonTimer);
+    _photonTimer = setTimeout(() => fetchSuggestions(q), 220);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    const count = dropdown.children.length;
+    if (dropdown.classList.contains('hidden') || !count) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); _photonActiveIndex = (_photonActiveIndex + 1) % count; highlight(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); _photonActiveIndex = (_photonActiveIndex - 1 + count) % count; highlight(); }
+    else if (e.key === 'Enter' && _photonActiveIndex >= 0) {
+      e.preventDefault();
+      dropdown.children[_photonActiveIndex].dispatchEvent(new MouseEvent('mousedown'));
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  input.addEventListener('blur', () => setTimeout(closeDropdown, 150));
+}
+
+// =========================================================
+// RENDER QUESTION
+// =========================================================
+function renderQuestion(q) {
+  if (q.type === 'subheading') {
+    return el('div', {class:'subhead'},
+      q.label,
+      q.helper ? el('div', {class:'text-sm text-twb-mute font-sans mt-1', html: escapeHtml(q.helper)}) : null
+    );
+  }
+  if (!isShown(q)) return null;
+
+  const card = el('div', {class:'question-card', 'data-qid': q.id});
+  const label = el('label', {class:'qlabel block', for:'f_'+q.id},
+    q.label,
+    q.required ? el('span',{class:'req'}, '*') : null
+  );
+  card.appendChild(label);
+  if (q.helper) card.appendChild(el('div',{class:'qhelper'}, q.helper));
+
+  const v = STATE.responses[q.id];
+
+  if (q.type === 'short') {
+    // Determine HTML5 autocomplete + input type from question id (best-guess)
+    let inputType = q.inputType || 'text';
+    let autocomplete = q.autocomplete || 'off';
+    if (q.id === 'email_address') { inputType = 'email'; autocomplete = 'email'; }
+    else if (q.id === 'phone_number') { inputType = 'tel'; autocomplete = 'tel'; }
+    else if (q.id === 'address') { autocomplete = 'street-address'; }
+    else if (q.id === 'full_name') { autocomplete = 'name'; }
+    card.appendChild(el('input', {
+      id:'f_'+q.id, class:'field-input', type: inputType,
+      value: v || '',
+      placeholder: 'Type your answer…',
+      autocomplete: autocomplete,
+      oninput: e => setValue(q.id, e.target.value)
+    }));
+  } else if (q.type === 'paragraph') {
+    card.appendChild(el('textarea', {
+      id:'f_'+q.id, class:'field-input', rows:3,
+      placeholder:'Type your answer…',
+      oninput: e => setValue(q.id, e.target.value)
+    }, v || ''));
+  } else if (q.type === 'date') {
+    card.appendChild(el('input', {
+      id:'f_'+q.id, class:'field-input md:max-w-xs', type:'date',
+      value: v || '',
+      oninput: e => setValue(q.id, e.target.value)
+    }));
+  } else if (q.type === 'yesno') {
+    const wrap = el('div', {class:'flex gap-2 flex-wrap'});
+    ['Yes','No'].forEach(opt => {
+      wrap.appendChild(el('button', {
+        type:'button', class:'chip yn',
+        'aria-pressed': v === opt ? 'true' : 'false',
+        onclick: () => { setValue(q.id, v === opt ? '' : opt); }
+      }, opt));
+    });
+    card.appendChild(wrap);
+  } else if (q.type === 'radio' || q.type === 'select') {
+    // Match Google Forms behavior: when "Other" is selected, store the raw freeform
+    // text as the value (no prefix). Detect Other = value is non-empty AND not in choices.
+    const choices = q.choices || [];
+    const isOther = q.allowOther && v != null && v !== '' && !choices.includes(v);
+    const otherShown = isOther || (STATE._otherShown && STATE._otherShown[q.id]);
+    const useDropdown = q.type === 'select' || choices.length > 8;
+
+    if (useDropdown) {
+      const sel = el('select', {
+        id:'f_'+q.id, class:'field-input md:max-w-md',
+        onchange: e => {
+          if (e.target.value === '__other__') {
+            STATE._otherShown = STATE._otherShown || {};
+            STATE._otherShown[q.id] = true;
+            renderSection();
+          } else {
+            if (STATE._otherShown) delete STATE._otherShown[q.id];
+            setValue(q.id, e.target.value);
+          }
+        }
+      }, el('option',{value:''},'— Select —'));
+      choices.forEach(c => sel.appendChild(el('option',{value:c, selected: v===c ? '' : false}, c)));
+      if (q.allowOther) sel.appendChild(el('option',{value:'__other__', selected: otherShown ? '' : false},'Other…'));
+      card.appendChild(sel);
+      if (otherShown) {
+        card.appendChild(el('div', {class:'mt-2'},
+          el('input', {
+            class:'field-input', placeholder:'Specify other…',
+            value: isOther ? v : '',
+            oninput: e => setValue(q.id, e.target.value)
+          })
+        ));
+      }
+    } else {
+      const wrap = el('div', {class:'flex gap-2 flex-wrap'});
+      choices.forEach(c => {
+        wrap.appendChild(el('button', {
+          type:'button', class:'chip',
+          'aria-pressed': v === c ? 'true' : 'false',
+          onclick: () => {
+            if (STATE._otherShown) delete STATE._otherShown[q.id];
+            setValue(q.id, v === c ? '' : c);
+          }
+        }, c));
+      });
+      if (q.allowOther) {
+        wrap.appendChild(el('button', {
+          type:'button', class:'chip',
+          'aria-pressed': otherShown ? 'true' : 'false',
+          onclick: () => {
+            STATE._otherShown = STATE._otherShown || {};
+            if (otherShown) {
+              delete STATE._otherShown[q.id];
+              if (isOther) setValue(q.id, '');
+              else renderSection();
+            } else {
+              STATE._otherShown[q.id] = true;
+              setValue(q.id, '');
+              renderSection();
+              setTimeout(()=> {
+                const inp = card.querySelector('input.field-input');
+                if (inp) inp.focus();
+              }, 0);
+            }
+          }
+        }, 'Other…'));
+      }
+      card.appendChild(wrap);
+      if (otherShown) {
+        card.appendChild(el('div', {class:'mt-2'},
+          el('input', {
+            class:'field-input', placeholder:'Specify other…',
+            value: isOther ? v : '',
+            oninput: e => setValue(q.id, e.target.value)
+          })
+        ));
+      }
+    }
+  } else if (q.type === 'checkboxes') {
+    const choices = q.choices || [];
+    const cur = Array.isArray(v) ? v : [];
+    const wrap = el('div', {class:'flex gap-2 flex-wrap'});
+    choices.forEach(c => {
+      const on = cur.includes(c);
+      wrap.appendChild(el('button', {
+        type:'button', class:'chip',
+        'aria-pressed': on ? 'true' : 'false',
+        onclick: () => {
+          const arr = Array.isArray(STATE.responses[q.id]) ? [...STATE.responses[q.id]] : [];
+          const idx = arr.indexOf(c);
+          if (idx >= 0) arr.splice(idx,1); else arr.push(c);
+          setValue(q.id, arr);
+        }
+      }, c));
+    });
+    card.appendChild(wrap);
+  } else {
+    card.appendChild(el('div',{class:'text-sm text-twb-clay'}, '(Unsupported field type: '+q.type+')'));
+  }
+  return card;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function setValue(qid, val) {
+  STATE.responses[qid] = val;
+  // Auto-detect builder email
+  if (qid === 'email_address') STATE.email = val;
+  // Mirror Project Profile answers into matching later-section questions
+  if (PROFILE_MIRRORS[qid]) {
+    for (const targetId of PROFILE_MIRRORS[qid]) {
+      STATE.responses[targetId] = val;
+    }
+  }
+  saveLocal();
+  // Re-render section if:
+  //   (a) this field is referenced by a showIf in the current section, OR
+  //   (b) this field is a chip-style field (radio/yesno/checkboxes) in the current section,
+  //       so the pressed-state visuals update immediately.
+  //   (c) this field has mirrored targets rendered in the current section
+  const currentSection = FORM_SCHEMA.sections[STATE.currentSection];
+  const refs = currentSection.items.some(it => it.showIf && it.showIf.field === qid);
+  const changed = currentSection.items.find(it => it.id === qid);
+  const isChip = changed && (changed.type === 'yesno' || changed.type === 'radio' || changed.type === 'checkboxes');
+  const mirrorTargetsHere = (PROFILE_MIRRORS[qid] || []).some(tid => currentSection.items.some(it => it.id === tid));
+  if (refs || isChip || mirrorTargetsHere) renderSection();
+  updateSidebar();
+  updateProgress();
+}
+
+// Apply all profile mirrors to current responses (called on boot after load)
+function applyProfileMirrors() {
+  for (const [source, targets] of Object.entries(PROFILE_MIRRORS)) {
+    const v = STATE.responses[source];
+    if (v == null || v === '') continue;
+    for (const t of targets) {
+      if (STATE.responses[t] == null || STATE.responses[t] === '') {
+        STATE.responses[t] = v;
+      }
+    }
+  }
+}
+
+// =========================================================
+// RENDER SECTION
+// =========================================================
+function renderSection() {
+  const root = document.getElementById('sectionRoot');
+  root.innerHTML = '';
+  const s = FORM_SCHEMA.sections[STATE.currentSection];
+  const totalQs = s.items.filter(i=>i.type!=='subheading').length;
+  const isSkipped = !!STATE.skipped[s.id];
+
+  const header = el('div', {class:'mb-5'},
+    el('div', {class:'text-xs uppercase tracking-widest text-twb-copper font-semibold mb-1'},
+      `Section ${STATE.currentSection + 1} of ${FORM_SCHEMA.sections.length}`),
+    el('h2', {class:'text-3xl mb-1'}, s.title || 'Section'),
+    s.description ? el('p',{class:'text-twb-mute'}, s.description) : null,
+    el('div', {class:'mt-2 text-sm text-twb-mute'}, `${totalQs} question${totalQs===1?'':'s'} in this section`)
+  );
+  root.appendChild(header);
+
+  if (isSkipped) {
+    root.appendChild(el('div',{class:'bg-twb-cream rounded-xl border border-dashed border-twb-sage2 p-6 text-center'},
+      el('div',{class:'text-twb-mute mb-2'}, 'You marked this section as not applicable.'),
+      el('button',{class:'btn-secondary text-sm', onclick:()=>{ delete STATE.skipped[s.id]; saveLocal(); renderSection(); updateSidebar(); updateProgress(); }},
+        'Un-skip this section')
+    ));
+  } else {
+    s.items.forEach(q => {
+      const node = renderQuestion(q);
+      if (node) root.appendChild(node);
+    });
+  }
+
+  // Show/hide submit zone on last section. Hide the Next button on last section —
+  // the Submit button below is the only forward action.
+  const last = STATE.currentSection === FORM_SCHEMA.sections.length - 1;
+  document.getElementById('submitWrap').classList.toggle('hidden', !last);
+  document.getElementById('nextBtn').classList.toggle('hidden', last);
+  document.getElementById('nextBtn').textContent = 'Next →';
+  document.getElementById('prevBtn').disabled = STATE.currentSection === 0;
+  document.getElementById('prevBtn').classList.toggle('opacity-50', STATE.currentSection === 0);
+  // (Skip-section button is omitted in this form.)
+  const skipBtn = document.getElementById('skipBtn');
+  if (skipBtn) {
+    skipBtn.classList.toggle('hidden', STATE.currentSection === 0);
+    skipBtn.textContent = isSkipped ? 'Un-skip this section' : 'Skip this section (not applicable)';
+  }
+
+  // If the address field is on screen, attach autocomplete.
+  // Prefer Google Places if an API key is set; otherwise use Photon (OSM, no key).
+  if (document.getElementById('f_address')) {
+    if (GOOGLE_PLACES_API_KEY) {
+      if (!_placesScriptLoaded) loadGoogleMapsScript();
+      else attachGooglePlaces();
+    } else {
+      attachPhotonAutocomplete();
+    }
+  }
+
+  // Only scroll to top when the user has just navigated to a different section,
+  // NOT on every in-section re-render (which fires on chip clicks etc).
+  if (STATE._lastRenderedSection !== STATE.currentSection) {
+    window.scrollTo({top:0, behavior:'smooth'});
+    STATE._lastRenderedSection = STATE.currentSection;
+  }
+}
+
+// =========================================================
+// SIDEBAR
+// =========================================================
+function updateSidebar() {
+  const nav = document.getElementById('sectionNav');
+  nav.innerHTML = '';
+  let hiddenCount = 0;
+  FORM_SCHEMA.sections.forEach((s, i) => {
+    const autoHidden = isSectionAutoHidden(s);
+    if (autoHidden) { hiddenCount++; return; }
+    const status = sectionStatus(i);
+    const link = el('div', {
+      class:'sec-link' + (i === STATE.currentSection ? ' active' : '') + (status === 'skipped' ? ' skipped':''),
+      'data-status': status,
+      onclick: () => { STATE.currentSection = i; saveLocal(); renderSection(); updateSidebar(); }
+    },
+      el('span',{class:'sec-num'}, String(i + 1)),
+      el('span',{class:'sec-dot'}),
+      el('span',{class:'flex-1 truncate'}, s.title || 'Section')
+    );
+    nav.appendChild(link);
+  });
+  // Show all sections toggle
+  if (hiddenCount > 0 || STATE.showAllSections) {
+    const toggle = el('div', {
+      class:'sec-link mt-2 pt-2 border-t border-twb-sage2 text-xs text-twb-mute',
+      style:'cursor:pointer',
+      onclick: () => {
+        STATE.showAllSections = !STATE.showAllSections;
+        saveLocal(); updateSidebar(); updateProgress();
+      }
+    },
+      el('span', {class:'flex-1'},
+        STATE.showAllSections
+          ? '↑ Hide non-applicable sections'
+          : `↓ Show all sections (${hiddenCount} hidden)`
+      )
+    );
+    nav.appendChild(toggle);
+  }
+}
+
+// =========================================================
+// SEARCH across all questions
+// =========================================================
+let _searchIndex = null;
+function buildSearchIndex() {
+  const idx = [];
+  FORM_SCHEMA.sections.forEach((s, si) => {
+    s.items.forEach(it => {
+      if (it.type === 'subheading') return;
+      idx.push({
+        sectionIndex: si,
+        sectionTitle: s.title,
+        id: it.id,
+        label: it.label,
+        labelLower: (it.label || '').toLowerCase(),
+        helperLower: (it.helper || '').toLowerCase(),
+        choicesLower: (Array.isArray(it.choices) ? it.choices.join(' ') : '').toLowerCase(),
+        sectionTitleLower: (s.title || '').toLowerCase()
+      });
+    });
+  });
+  _searchIndex = idx;
+}
+
+function performSearch(query) {
+  if (!_searchIndex) buildSearchIndex();
+  const q = (query || '').trim().toLowerCase();
+  const results = document.getElementById('searchResults');
+  if (!q) { results.classList.add('hidden'); results.innerHTML = ''; return; }
+  const tokens = q.split(/\s+/).filter(Boolean);
+  // Score each entry: label matches = 10, helper = 5, choices = 3, sectionTitle = 1. Require all tokens to hit somewhere.
+  const scored = _searchIndex.map(entry => {
+    let total = 0;
+    for (const t of tokens) {
+      const inLabel = entry.labelLower.includes(t);
+      const inHelper = entry.helperLower.includes(t);
+      const inChoices = entry.choicesLower.includes(t);
+      const inSection = entry.sectionTitleLower.includes(t);
+      if (!inLabel && !inHelper && !inChoices && !inSection) return null;  // token missed
+      total += (inLabel ? 10 : 0) + (inHelper ? 5 : 0) + (inChoices ? 3 : 0) + (inSection ? 1 : 0);
+    }
+    return { entry, score: total };
+  }).filter(Boolean);
+  scored.sort((a,b) => b.score - a.score);
+  const hits = scored.slice(0, 30).map(x => x.entry);
+  results.innerHTML = '';
+  if (!hits.length) {
+    const empty = el('div', {class:'px-3 py-3 text-sm text-twb-mute'}, 'No questions match.');
+    results.appendChild(empty);
+    results.classList.remove('hidden');
+    return;
+  }
+  hits.forEach(h => {
+    const row = el('div', {
+      class: 'px-3 py-2 text-sm hover:bg-twb-cream cursor-pointer border-b border-[#F1F0EB] last:border-0',
+      onmousedown: (e) => {
+        e.preventDefault();
+        jumpToQuestion(h.sectionIndex, h.id);
+      }
+    });
+    const title = el('div', {class:'text-twb-ink font-medium leading-snug'}, h.label);
+    title.style.color = '#2A2A2A';
+    const sub = el('div', {class:'text-xs text-twb-mute mt-0.5'}, h.sectionTitle);
+    row.appendChild(title);
+    row.appendChild(sub);
+    results.appendChild(row);
+  });
+  results.classList.remove('hidden');
+}
+
+function jumpToQuestion(sectionIndex, qid) {
+  // If the target section is currently auto-hidden, flip showAllSections on
+  const sec = FORM_SCHEMA.sections[sectionIndex];
+  if (isSectionAutoHidden(sec)) STATE.showAllSections = true;
+  STATE.currentSection = sectionIndex;
+  saveLocal();
+  renderSection(); updateSidebar(); updateProgress();
+  // Close the search dropdown and clear the input
+  const results = document.getElementById('searchResults');
+  results.classList.add('hidden'); results.innerHTML = '';
+  const searchInput = document.getElementById('sectionSearch');
+  if (searchInput) searchInput.value = '';
+  setTimeout(() => {
+    const node = document.querySelector(`[data-qid="${qid}"]`);
+    if (node) {
+      node.scrollIntoView({behavior:'smooth', block:'center'});
+      // Briefly highlight
+      node.style.transition = 'border-color .4s, box-shadow .4s';
+      const origBorder = node.style.borderColor;
+      node.style.borderColor = '#B07D4A';
+      node.style.boxShadow = '0 0 0 3px rgba(176,125,74,.15)';
+      setTimeout(() => {
+        node.style.borderColor = origBorder;
+        node.style.boxShadow = '';
+      }, 1400);
+      // Focus any input inside
+      const input = node.querySelector('input, textarea, select');
+      if (input) input.focus({preventScroll:true});
+    }
+  }, 120);
+}
+
+(function wireSearch() {
+  const s = document.getElementById('sectionSearch');
+  if (!s) return;
+  s.addEventListener('input', e => performSearch(e.target.value));
+  s.addEventListener('focus', () => { if (s.value) performSearch(s.value); });
+  s.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { s.value = ''; performSearch(''); s.blur(); }
+  });
+  // Close dropdown when clicking outside
+  document.addEventListener('mousedown', (e) => {
+    const results = document.getElementById('searchResults');
+    if (!results) return;
+    if (e.target.closest('#sectionSearch') || e.target.closest('#searchResults')) return;
+    results.classList.add('hidden');
+  });
+})();
+
+// Mobile sidebar toggle
+(function wireSidebarToggle() {
+  const btn = document.getElementById('sidebarToggle');
+  const panel = document.getElementById('sidebarPanel');
+  const icon = document.getElementById('sidebarToggleIcon');
+  if (!btn || !panel) return;
+  btn.addEventListener('click', () => {
+    const isHidden = panel.classList.contains('hidden');
+    if (isHidden) {
+      panel.classList.remove('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+      icon.textContent = '▲';
+    } else {
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      icon.textContent = '▼';
+    }
+  });
+  // Auto-collapse the panel on mobile after picking a section
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth >= 1024) return;  // lg breakpoint
+    const link = e.target.closest('.sec-link');
+    if (link) {
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      if (icon) icon.textContent = '▼';
+    }
+  });
+})();
+
+function updateProgress() {
+  const pct = overallProgress();
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '%';
+}
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+// Find the next/prev section that isn't auto-hidden.
+function nextVisibleSection(from, dir) {
+  let i = from + dir;
+  while (i >= 0 && i < FORM_SCHEMA.sections.length) {
+    if (!isSectionAutoHidden(FORM_SCHEMA.sections[i])) return i;
+    i += dir;
+  }
+  return -1;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  const next = nextVisibleSection(STATE.currentSection, +1);
+  if (next >= 0) {
+    STATE.currentSection = next;
+    saveLocal();
+    renderSection(); updateSidebar(); updateProgress();
+  } else {
+    // already on last visible — scroll to submit
+    document.getElementById('submitWrap').scrollIntoView({behavior:'smooth'});
+  }
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  const prev = nextVisibleSection(STATE.currentSection, -1);
+  if (prev >= 0) {
+    STATE.currentSection = prev;
+    saveLocal();
+    renderSection(); updateSidebar(); updateProgress();
+  }
+});
+// (Skip-section listener omitted — intake form has no skip button.)
+
+// =========================================================
+// SAVE & EMAIL LINK
+// =========================================================
+async function saveAndEmailLink() {
+  if (!APPS_SCRIPT_URL) {
+    showToast('Apps Script URL not configured. Progress is saved on this device.', 4000);
+    return;
+  }
+  // Need an email to send the link to
+  let email = STATE.email || STATE.responses['email_address'] || '';
+  if (!email) {
+    email = prompt('Enter your email so we can send you a resume link:') || '';
+    if (!email) return;
+    STATE.email = email;
+    STATE.responses['email_address'] = email;
+    saveLocal();
+  }
+  showToast('Saving…');
+  try {
+    const res = await postJson({
+      action: 'save_draft',
+      draftId: STATE.draftId,
+      email,
+      payload: { responses: STATE.responses, skipped: STATE.skipped, currentSection: STATE.currentSection }
+    });
+    if (res && res.ok) {
+      STATE.draftId = res.draftId;
+      saveLocal();
+      showToast('Saved! A resume link has been emailed to ' + email, 4500);
+    } else {
+      showToast('Could not save draft. Your work is still saved on this device.', 4000);
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Network error. Your work is still saved on this device.', 4000);
+  }
+}
+// (Save & email-link buttons removed for the short intake form — autosave to localStorage stays
+//  as a silent fallback so accidental closes don't lose typed data.)
+
+// =========================================================
+// BUILD SUBMISSION MANIFEST
+// Produces a payload the backend can format without knowing the schema.
+// =========================================================
+function buildSubmissionPayload() {
+  const sections = FORM_SCHEMA.sections.map(s => {
+    const autoHidden = isSectionAutoHidden(s);
+    return {
+      id: s.id,
+      title: s.title,
+      skipped: !!STATE.skipped[s.id] || autoHidden,
+      autoHidden: autoHidden,
+      items: autoHidden ? [] : s.items
+        .filter(it => it.type !== 'subheading')
+        .filter(it => isShown(it))
+        .map(it => {
+          const v = STATE.responses[it.id];
+          let display = '';
+          if (v == null || v === '') display = '';
+          else if (Array.isArray(v)) display = v.join(', ');
+          else display = String(v);
+          return { id: it.id, label: it.label, type: it.type, value: v ?? '', display };
+        })
+    };
+  });
+  // Cover info: pull headline fields for at-a-glance triage in email + sheet.
+  const r = STATE.responses;
+  const cover = {
+    full_name: r.full_name || '',
+    email_address: r.email_address || STATE.email || '',
+    phone_number: r.phone_number || '',
+    address: r.address || '',
+    own_or_rent: r.own_or_rent || '',
+    water_source: r.water_source || '',
+    num_bathrooms: r.num_bathrooms || '',
+    num_occupants: r.num_occupants || '',
+    timeline: r.timeline || '',
+    budget_alignment: r.budget_alignment || '',
+    outcome: computeOutcome(r),
+    outcome_label: outcomeLabel(computeOutcome(r))
+  };
+  return { sections, cover, responses: STATE.responses, skipped: STATE.skipped };
+}
+
+// =========================================================
+// RECOMMENDATION ENGINE
+// Replaces Typeform's 4-counter logic with the same outcomes.
+// =========================================================
+function computeOutcome(r) {
+  if (r.own_or_rent === 'Rent') return 'renter_bail';
+  if (r.water_source === 'Well water' || r.water_source === 'Not sure') return 'needs_more_info';
+  const sizeMap = { '1–2': 1, '3–4': 2, '5+': 3 };
+  const bath = sizeMap[r.num_bathrooms] || 0;
+  const occ  = sizeMap[r.num_occupants] || 0;
+  const max = Math.max(bath, occ);
+  if (max === 1) return 'wh1';
+  if (max === 2) return 'wh5_wh10';
+  if (max === 3) return 'wh10_wh20';
+  return 'needs_more_info';
+}
+function outcomeLabel(o) {
+  return ({
+    renter_bail:     'Renter — not a fit for whole-house',
+    needs_more_info: 'Needs more info / schedule a call',
+    wh1:             'WH1 fit (small home)',
+    wh5_wh10:        'WH5 / WH10 fit (medium home)',
+    wh10_wh20:       'WH10 / WH20 fit (large home)'
+  })[o] || 'Unknown';
+}
+
+// Render the right completion screen for the computed outcome.
+function showDoneOverlay() {
+  const outcome = computeOutcome(STATE.responses);
+  const o = FORM_SCHEMA.outcomes[outcome] || FORM_SCHEMA.outcomes.needs_more_info;
+  document.getElementById('doneTitle').textContent = o.title;
+  document.getElementById('doneBody').textContent = o.body;
+  // Products (single or multiple)
+  const prodWrap = document.getElementById('doneProducts');
+  prodWrap.innerHTML = '';
+  const list = o.products || (o.product ? [o.product] : []);
+  if (list.length) {
+    const heading = document.createElement('div');
+    heading.className = 'font-semibold text-twb-green mb-2';
+    heading.textContent = 'Recommended product' + (list.length > 1 ? 's' : '');
+    prodWrap.appendChild(heading);
+    list.forEach(p => {
+      const a = document.createElement('a');
+      a.href = p.url; a.target = '_blank'; a.rel = 'noopener';
+      a.className = 'block bg-twb-cream rounded-xl border border-twb-sage2 px-4 py-3 mb-2 font-medium text-twb-green hover:border-twb-sage';
+      a.textContent = p.label;
+      prodWrap.appendChild(a);
+    });
+  }
+  // CTA (schedule a call)
+  const ctaWrap = document.getElementById('doneCta');
+  ctaWrap.innerHTML = '';
+  if (o.cta) {
+    const a = document.createElement('a');
+    a.href = o.cta.url; a.target = '_blank'; a.rel = 'noopener';
+    a.className = 'inline-block btn-copper';
+    a.textContent = o.cta.label;
+    ctaWrap.appendChild(a);
+  }
+  document.getElementById('doneOverlay').classList.remove('hidden');
+}
+
+// =========================================================
+// SUBMIT
+// =========================================================
+async function submitForm() {
+  // Validate required
+  const missing = [];
+  flatItems().forEach(q => {
+    const sec = FORM_SCHEMA.sections[q.sectionIndex];
+    if (q.required && isShown(q) && !STATE.skipped[q.sectionId] && !isSectionAutoHidden(sec) && !questionIsAnswered(q)) {
+      missing.push(q);
+    }
+  });
+  if (missing.length) {
+    const first = missing[0];
+    STATE.currentSection = first.sectionIndex;
+    renderSection(); updateSidebar();
+    showToast(`Please complete required field: "${first.label}" (and ${missing.length-1} other${missing.length===2?'':'s'})`, 4500);
+    setTimeout(()=>{
+      const node = document.querySelector(`[data-qid="${first.id}"]`);
+      if (node) { node.scrollIntoView({behavior:'smooth', block:'center'}); node.style.borderColor = '#A8593E'; }
+    }, 300);
+    return;
+  }
+  if (!APPS_SCRIPT_URL) {
+    showToast('Apps Script URL not configured. Cannot submit yet — see deployment instructions in apps_script.gs.', 5000);
+    return;
+  }
+  showToast('Submitting…');
+  try {
+    const res = await postJson({
+      action: 'submit',
+      draftId: STATE.draftId,
+      payload: buildSubmissionPayload()
+    });
+    if (res && res.ok) {
+      // Clear local draft so a fresh visit starts clean
+      localStorage.removeItem(STORAGE_KEY);
+      // Strip ?draft from URL
+      if (location.search.includes('draft=')) {
+        history.replaceState({},'',location.pathname);
+      }
+      showDoneOverlay();
+    } else {
+      showToast('Submission failed. Please try again.', 4000);
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Network error during submission.', 4000);
+  }
+}
+document.getElementById('submitBtn').addEventListener('click', submitForm);
+document.getElementById('doneClose').addEventListener('click', () => {
+  document.getElementById('doneOverlay').classList.add('hidden');
+});
+
+async function postJson(body) {
+  // Apps Script Web Apps don't support CORS preflight, so send as text/plain
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(body),
+    redirect:'follow'
+  });
+  return res.json();
+}
+
+// =========================================================
+// RESUME FROM URL
+// =========================================================
+async function maybeResumeFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const draftId = params.get('draft');
+  if (!draftId || !APPS_SCRIPT_URL) return false;
+  showToast('Loading saved draft…');
+  try {
+    const res = await postJson({action:'resume_draft', draftId});
+    if (res && res.ok && res.payload) {
+      STATE.responses = res.payload.responses || {};
+      STATE.skipped = res.payload.skipped || {};
+      STATE.currentSection = res.payload.currentSection || 0;
+      STATE.draftId = draftId;
+      STATE.email = res.payload.email || STATE.email;
+      saveLocal();
+      showToast('Welcome back! Your draft was restored.', 3500);
+      return true;
+    }
+  } catch(e) { console.warn(e); }
+  return false;
+}
+
+// =========================================================
+// BOOT
+// =========================================================
+async function boot() {
+  // Build sidebar first so it's always there
+  updateSidebar();
+  updateProgress();
+
+  // Try URL resume first
+  const resumed = await maybeResumeFromUrl();
+
+  if (!resumed) {
+    const hasLocal = loadLocal();
+    if (hasLocal && Object.keys(STATE.responses).length > 0) {
+      // Returning user — silently jump back into the form where they left off.
+      // (Short intake form: no need to ask permission, just resume.)
+      renderSection();
+      updateSidebar();
+      updateProgress();
+    } else {
+      // First-time user — show full intro
+      const intro = document.getElementById('introOverlay');
+      intro.classList.remove('hidden');
+      document.getElementById('introStart').onclick = () => {
+        intro.classList.add('hidden');
+        renderSection();
+      };
+    }
+  } else {
+    renderSection();
+  }
+  // Ensure profile answers are mirrored into any later-section duplicates
+  applyProfileMirrors();
+  updateSidebar();
+  updateProgress();
+}
+
+boot();
+</script>
+
+</body>
+</html>
