@@ -156,7 +156,8 @@
     </p>
     <ul class="space-y-2 text-sm text-twb-text mb-5">
       <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>Roughly <strong>3 minutes</strong> to fill out.</span></li>
-      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>You'll get a <strong>tailored product recommendation</strong> at the end.</span></li>
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>At the end, you'll see a <strong>personalized water-quality report</strong> for your area — utility name, detected contaminants, and recent EPA violations.</span></li>
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">●</span><span>Plus a <strong>tailored system recommendation</strong> based on your home.</span></li>
     </ul>
     <div class="flex flex-wrap gap-3">
       <button id="introStart" class="btn-primary">Start →</button>
@@ -169,11 +170,16 @@
 
 <!-- ============ COMPLETION OVERLAY (outcome-aware) ============ -->
 <div id="doneOverlay" class="overlay no-print hidden">
-  <div class="overlay-card text-center">
+  <div class="overlay-card text-center" style="max-width:720px">
     <img src="twb_logo.png"
          alt="The Well Build"
          class="mx-auto h-20 w-auto mb-3">
     <h1 id="doneTitle" class="text-3xl mb-3"></h1>
+    <!-- Water report panel (rendered first, before recommendation, when EPA returns data) -->
+    <div id="doneWaterReport" class="mb-5 text-left"></div>
+    <div id="doneRecHeading" class="mb-2 text-left hidden">
+      <div class="text-xs uppercase tracking-widest text-twb-copper font-semibold">Our recommendation</div>
+    </div>
     <p id="doneBody" class="text-twb-text mb-5 text-left"></p>
     <div id="doneProducts" class="mb-5 text-left"></div>
     <div id="doneCta" class="mb-5"></div>
@@ -1465,11 +1471,24 @@ function outcomeLabel(o) {
 }
 
 // Render the right completion screen for the computed outcome.
-function showDoneOverlay() {
+// Optional waterReport (from the Apps Script response) is shown ABOVE the recommendation.
+function showDoneOverlay(waterReport) {
   const outcome = computeOutcome(STATE.responses);
   const o = FORM_SCHEMA.outcomes[outcome] || FORM_SCHEMA.outcomes.needs_more_info;
   document.getElementById('doneTitle').textContent = o.title;
   document.getElementById('doneBody').textContent = o.body;
+
+  // Water report (only rendered if EPA returned data)
+  const reportWrap = document.getElementById('doneWaterReport');
+  reportWrap.innerHTML = '';
+  const recHeading = document.getElementById('doneRecHeading');
+  if (waterReport && waterReport.utility) {
+    reportWrap.appendChild(buildWaterReportNode(waterReport));
+    if (recHeading) recHeading.classList.remove('hidden');
+  } else {
+    if (recHeading) recHeading.classList.add('hidden');
+  }
+
   // Products (single or multiple)
   const prodWrap = document.getElementById('doneProducts');
   prodWrap.innerHTML = '';
@@ -1498,6 +1517,137 @@ function showDoneOverlay() {
     ctaWrap.appendChild(a);
   }
   document.getElementById('doneOverlay').classList.remove('hidden');
+}
+
+// Build the on-screen water report panel from the structured report object.
+// Shows up to 5 contaminants (abridged "customer" view).
+function buildWaterReportNode(report) {
+  const wrap = document.createElement('div');
+  wrap.style.background = '#FAF8F4';
+  wrap.style.border = '1px solid #C5D8CC';
+  wrap.style.borderRadius = '12px';
+  wrap.style.padding = '20px';
+
+  const eyebrow = document.createElement('div');
+  eyebrow.className = 'text-xs uppercase tracking-widest text-twb-copper font-semibold mb-1';
+  eyebrow.textContent = 'Your Water Report';
+  wrap.appendChild(eyebrow);
+
+  const utility = document.createElement('div');
+  utility.className = 'serif text-xl text-twb-green mb-1';
+  utility.textContent = report.utility;
+  wrap.appendChild(utility);
+
+  const meta = document.createElement('div');
+  meta.className = 'text-xs text-twb-mute mb-3';
+  const metaParts = [];
+  if (report.populationServed) metaParts.push('Serves ~' + Number(report.populationServed).toLocaleString() + ' people');
+  if (report.sourceType) metaParts.push(report.sourceType);
+  meta.textContent = metaParts.join(' · ');
+  wrap.appendChild(meta);
+
+  const summary = document.createElement('div');
+  const isAlert = (report.healthBasedViolations || 0) > 0;
+  summary.style.background = isAlert ? '#FAEEE5' : '#EFF5EE';
+  summary.style.borderLeft = '4px solid ' + (isAlert ? '#A8593E' : '#1E4430');
+  summary.style.padding = '10px 14px';
+  summary.style.fontSize = '14px';
+  summary.style.color = '#2A2A2A';
+  summary.style.marginBottom = '14px';
+  summary.style.borderRadius = '4px';
+  if ((report.totalViolations || 0) > 0) {
+    summary.textContent = (report.healthBasedViolations || 0)
+      + ' health-based and '
+      + Math.max(0, (report.totalViolations || 0) - (report.healthBasedViolations || 0))
+      + ' procedural violation(s) on EPA record in the last '
+      + (report.yearsAnalyzed || 5) + ' years.';
+  } else {
+    summary.textContent = 'No EPA violations on record in the last '
+      + (report.yearsAnalyzed || 5)
+      + ' years. But EPA standards do not regulate microplastics, PFAS, pharmaceuticals, or many disinfection byproducts.';
+  }
+  wrap.appendChild(summary);
+
+  const contaminants = (report.contaminants || []).slice(0, 5);
+  if (contaminants.length) {
+    const list = document.createElement('div');
+    list.style.background = '#fff';
+    list.style.border = '1px solid #C5D8CC';
+    list.style.borderRadius = '8px';
+    list.style.overflow = 'hidden';
+    contaminants.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.style.padding = '10px 14px';
+      if (i > 0) row.style.borderTop = '1px solid #EFEAE0';
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.alignItems = 'flex-start';
+      row.style.gap = '12px';
+      const left = document.createElement('div');
+      const name = document.createElement('div');
+      name.style.color = '#1E4430';
+      name.style.fontWeight = '600';
+      name.style.fontSize = '14px';
+      name.textContent = c.name;
+      if (c.healthBased) {
+        const badge = document.createElement('span');
+        badge.textContent = 'Health-based';
+        badge.style.background = '#A8593E';
+        badge.style.color = '#fff';
+        badge.style.fontSize = '10px';
+        badge.style.letterSpacing = '.1em';
+        badge.style.padding = '2px 6px';
+        badge.style.borderRadius = '4px';
+        badge.style.marginLeft = '8px';
+        badge.style.textTransform = 'uppercase';
+        badge.style.verticalAlign = 'middle';
+        name.appendChild(badge);
+      }
+      left.appendChild(name);
+      if (c.latestDate) {
+        const detail = document.createElement('div');
+        detail.style.color = '#6B6B6B';
+        detail.style.fontSize = '12px';
+        detail.style.marginTop = '2px';
+        const dateStr = String(c.latestDate).slice(0, 10);
+        let txt = 'Most recent: ' + dateStr;
+        if (c.latestMeasure != null && c.latestMeasure !== '' && c.latestUnit) {
+          txt += ' · measured ' + c.latestMeasure + ' ' + c.latestUnit;
+          if (c.latestMcl) txt += ' (limit ' + c.latestMcl + ')';
+        }
+        detail.textContent = txt;
+        left.appendChild(detail);
+      }
+      const right = document.createElement('div');
+      right.style.color = '#2A2A2A';
+      right.style.fontWeight = '600';
+      right.style.fontSize = '14px';
+      right.style.whiteSpace = 'nowrap';
+      right.textContent = c.count + (c.count === 1 ? ' violation' : ' violations');
+      row.appendChild(left);
+      row.appendChild(right);
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+    if ((report.contaminants || []).length > 5) {
+      const more = document.createElement('div');
+      more.style.fontSize = '12px';
+      more.style.color = '#6B6B6B';
+      more.style.fontStyle = 'italic';
+      more.style.padding = '8px 4px 0';
+      more.textContent = '+ ' + ((report.contaminants.length) - 5) + ' more contaminants on record. Ask us for the full report.';
+      wrap.appendChild(more);
+    }
+  }
+
+  const source = document.createElement('div');
+  source.style.fontSize = '11px';
+  source.style.color = '#9CA8A0';
+  source.style.marginTop = '12px';
+  source.textContent = 'Source: EPA Safe Drinking Water Information System (SDWIS). Last 5 years.';
+  wrap.appendChild(source);
+
+  return wrap;
 }
 
 // =========================================================
@@ -1538,11 +1688,11 @@ async function submitForm() {
   const originalLabel = btn ? btn.textContent : '';
   if (btn) {
     btn.disabled = true;
-    btn.textContent = 'Submitting…';
+    btn.textContent = 'Generating your report…';
     btn.style.opacity = '0.65';
     btn.style.cursor = 'wait';
   }
-  showToast('Submitting…');
+  showToast('Generating your water report…');
 
   try {
     const res = await postJson({
@@ -1557,7 +1707,7 @@ async function submitForm() {
       if (location.search.includes('draft=')) {
         history.replaceState({},'',location.pathname);
       }
-      showDoneOverlay();
+      showDoneOverlay(res.waterReport || null);
     } else {
       showToast('Submission failed. Please try again.', 4000);
       // Re-enable submit so they can retry
