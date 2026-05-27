@@ -1644,11 +1644,50 @@ function buildWaterReportNode(report) {
     }
   }
 
+  // EWG deep-link callout — drives interested customers to the richer EWG report for their utility.
+  // EWG tests against ~250 substances (vs EPA's ~90 regulated), including PFAS, chromium-6, etc.
+  if (report.pwsid) {
+    const ewgWrap = document.createElement('div');
+    ewgWrap.style.marginTop = '14px';
+    ewgWrap.style.padding = '12px 14px';
+    ewgWrap.style.background = '#FFFFFF';
+    ewgWrap.style.border = '1px dashed #C5D8CC';
+    ewgWrap.style.borderRadius = '8px';
+    ewgWrap.style.display = 'flex';
+    ewgWrap.style.alignItems = 'center';
+    ewgWrap.style.justifyContent = 'space-between';
+    ewgWrap.style.gap = '12px';
+    ewgWrap.style.flexWrap = 'wrap';
+    const ewgText = document.createElement('div');
+    ewgText.style.fontSize = '13px';
+    ewgText.style.color = '#3A3A3A';
+    ewgText.style.lineHeight = '1.45';
+    ewgText.innerHTML = '<strong style="color:#1E4430">Want a deeper look?</strong> The Environmental Working Group tests against ~250 substances — including PFAS, hexavalent chromium, and other contaminants EPA doesn\'t regulate.';
+    const ewgLink = document.createElement('a');
+    ewgLink.href = 'https://www.ewg.org/tapwater/system.php?pws=' + encodeURIComponent(report.pwsid);
+    ewgLink.target = '_blank';
+    ewgLink.rel = 'noopener';
+    ewgLink.style.display = 'inline-block';
+    ewgLink.style.background = '#FFFFFF';
+    ewgLink.style.color = '#1E4430';
+    ewgLink.style.border = '1px solid #1E4430';
+    ewgLink.style.padding = '8px 14px';
+    ewgLink.style.borderRadius = '6px';
+    ewgLink.style.fontSize = '13px';
+    ewgLink.style.fontWeight = '600';
+    ewgLink.style.textDecoration = 'none';
+    ewgLink.style.whiteSpace = 'nowrap';
+    ewgLink.textContent = 'See EWG report →';
+    ewgWrap.appendChild(ewgText);
+    ewgWrap.appendChild(ewgLink);
+    wrap.appendChild(ewgWrap);
+  }
+
   const source = document.createElement('div');
   source.style.fontSize = '11px';
   source.style.color = '#9CA8A0';
   source.style.marginTop = '12px';
-  source.textContent = 'Source: EPA Safe Drinking Water Information System (SDWIS). Last 5 years.';
+  source.textContent = 'Sources: EPA Safe Drinking Water Information System (SDWIS), last 5 years. Deeper analysis via EWG Tap Water Database.';
   wrap.appendChild(source);
 
   return wrap;
