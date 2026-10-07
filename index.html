@@ -152,12 +152,12 @@
     <h1 class="text-3xl mb-3">Let's Find the Right Water Solution</h1>
     <p class="text-twb-text mb-4">
       Whole-house water filtration that fits your home, your water source, and your goals.
-      This takes about 3 minutes &mdash; we'll use your answers to recommend the best approach for your specific situation.
+      It takes about 3 minutes, and tells us what we need to know to point you in the right direction.
     </p>
     <ul class="space-y-2 text-sm text-twb-text mb-5">
       <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">&#x25CF;</span><span>Roughly <strong>3 minutes</strong> to fill out.</span></li>
-      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">&#x25CF;</span><span>At the end, you'll see a <strong>personalized water-quality report</strong> for your area &mdash; utility name, detected contaminants, and recent EPA violations.</span></li>
-      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">&#x25CF;</span><span>Plus a <strong>tailored system recommendation</strong> based on your home.</span></li>
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">&#x25CF;</span><span>Someone from our team reviews every submission.</span></li>
+      <li class="flex gap-2"><span class="text-twb-green flex-shrink-0">&#x25CF;</span><span>We'll be in touch with next steps for your home.</span></li>
     </ul>
     <div class="flex flex-wrap gap-3">
       <button id="introStart" class="btn-primary">Start &rarr;</button>
@@ -260,7 +260,7 @@
 // Source: Typeform l2YhrJyj + Greg's approved cuts/edits.
 const FORM_SCHEMA = {
   title: `The Well Build \u2014 Water Filtration Inquiry`,
-  description: `Let's find the right water solution for your home. This takes about 3 minutes \u2014 we'll use your answers to recommend the best approach for your specific situation.`,
+  description: `Let's find the right water solution for your home. It takes about 3 minutes, and tells us what we need to know to point you in the right direction.`,
   completion: {},
   outcomes: {
     renter_bail: {
@@ -270,7 +270,7 @@ const FORM_SCHEMA = {
     },
     needs_more_info: {
       title: `Thanks \u2014 let's talk`,
-      body: `Based on your answers, we need a bit more information before we can recommend the right solution for you. Schedule a call with us at the link below, or sit tight \u2014 someone from our team will reach out within 24\u201348 hours. Heads up: if you hear from WateRx, that's us too. Check your inbox (and spam folder) for next steps.`,
+      body: `Based on your answers, we need a bit more information before we can recommend the right solution for you. Schedule a call with us at the link below, or sit tight \u2014 someone from our team will reach out within 24\u201348 hours.`,
       cta: {
         label: `Schedule a call \u2192`,
         url: `https://calendar.google.com/appointments/schedules/AcZssZ3HmX1HaWdxYsZi0dmHdH3l7yaNn9oh1cSeGx8x0CsSTmOUYg1rJFi_8pdkTarUwhxSO5vWXpLu`
@@ -523,7 +523,7 @@ const FORM_SCHEMA = {
         },
         {
           type: `radio`,
-          label: `How did you hear about The Well Build / WateRx?`,
+          label: `How did you hear about The Well Build?`,
           required: true,
           choices: [
             `Google search`,
@@ -556,7 +556,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzj85TbcxIc3kWi
 
 // Public URL of the Clean Water Guide PDF (upload to Shopify Files: Settings > Files).
 // Leave as the placeholder to hide the download button until you have a live link.
-const GUIDE_PDF_URL = "https://cdn.shopify.com/s/files/1/0752/7379/7803/files/TheWellBuild_WateRx_Clean_Water_Guide.pdf?v=1782239116";
+const GUIDE_PDF_URL = "PASTE_PDF_URL_HERE";
 
 // =========================================================
 // Optional: Google Places Autocomplete for the Address field
@@ -1481,59 +1481,20 @@ function outcomeLabel(o) {
 // Render the right completion screen for the computed outcome.
 // Optional waterReport (from the Apps Script response) is shown ABOVE the recommendation.
 function showDoneOverlay(waterReport) {
-  const outcome = computeOutcome(STATE.responses);
-  const o = FORM_SCHEMA.outcomes[outcome] || FORM_SCHEMA.outcomes.needs_more_info;
-  document.getElementById('doneTitle').textContent = o.title;
-  document.getElementById('doneBody').textContent = o.body;
+  // Outcome is still computed and logged for our own triage, but nothing is shown to the
+  // visitor: no system recommendation, no product links, no call booking.
+  document.getElementById('doneTitle').textContent = 'Thank you';
+  document.getElementById('doneBody').textContent =
+    "Thanks for telling us about your water. Someone from our team will review your answers and be in touch shortly.";
 
-  // Water report (only rendered if EPA returned data)
-  const reportWrap = document.getElementById('doneWaterReport');
-  reportWrap.innerHTML = '';
-  const recHeading = document.getElementById('doneRecHeading');
-  if (waterReport && waterReport.utility) {
-    reportWrap.appendChild(buildWaterReportNode(waterReport));
-    if (recHeading) recHeading.classList.remove('hidden');
-  } else {
-    if (recHeading) recHeading.classList.add('hidden');
-  }
-
-  // Products (single or multiple)
-  const prodWrap = document.getElementById('doneProducts');
-  prodWrap.innerHTML = '';
-  const list = o.products || (o.product ? [o.product] : []);
-  if (list.length) {
-    const heading = document.createElement('div');
-    heading.className = 'font-semibold text-twb-green mb-2';
-    heading.textContent = 'Recommended product' + (list.length > 1 ? 's' : '');
-    prodWrap.appendChild(heading);
-    list.forEach(p => {
-      const a = document.createElement('a');
-      a.href = p.url; a.target = '_blank'; a.rel = 'noopener';
-      a.className = 'block bg-twb-cream rounded-xl border border-twb-sage2 px-4 py-3 mb-2 font-medium text-twb-green hover:border-twb-sage';
-      a.textContent = p.label;
-      prodWrap.appendChild(a);
-    });
-  }
-  // CTA (schedule a call)
-  const ctaWrap = document.getElementById('doneCta');
-  ctaWrap.innerHTML = '';
-  if (o.cta) {
-    const a = document.createElement('a');
-    a.href = o.cta.url; a.target = '_blank'; a.rel = 'noopener';
-    a.className = 'inline-block btn-copper';
-    a.textContent = o.cta.label;
-    ctaWrap.appendChild(a);
-  }
-
-  // Clean Water Guide download (shown on all outcomes once a live PDF URL is set)
-  if (GUIDE_PDF_URL && GUIDE_PDF_URL !== 'PASTE_PDF_URL_HERE') {
-    const dl = document.createElement('a');
-    dl.href = GUIDE_PDF_URL; dl.target = '_blank'; dl.rel = 'noopener';
-    dl.setAttribute('download', '');
-    dl.className = 'block mt-3 bg-twb-cream rounded-xl border border-twb-sage2 px-4 py-3 font-medium text-twb-green hover:border-twb-sage';
-    dl.textContent = '\uD83D\uDCC4  Download your Clean Water Guide (PDF)';
-    ctaWrap.appendChild(dl);
-  }
+  var reportWrap = document.getElementById('doneWaterReport');
+  if (reportWrap) reportWrap.innerHTML = '';
+  var recHeading = document.getElementById('doneRecHeading');
+  if (recHeading) recHeading.classList.add('hidden');
+  var prodWrap = document.getElementById('doneProducts');
+  if (prodWrap) prodWrap.innerHTML = '';
+  var ctaWrap = document.getElementById('doneCta');
+  if (ctaWrap) ctaWrap.innerHTML = '';
 
   document.getElementById('doneOverlay').classList.remove('hidden');
 }
