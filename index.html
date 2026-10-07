@@ -243,8 +243,8 @@
           When you submit, your inquiry goes straight to The Well Build team for review.
         </p>
         <div class="bg-white border-l-4 border-twb-copper rounded-r-lg px-4 py-3 mb-4 text-sm text-twb-text">
-          <strong class="text-twb-green">Heads up:</strong> after you click submit, we'll pull a live water-quality report for your area from EPA records.
-          This takes about <strong>5&ndash;10 seconds</strong> &mdash; please don't close or refresh the page while your report generates.
+          <strong class="text-twb-green">Heads up:</strong> submitting takes a few seconds &mdash;
+          please don't close or refresh the page until you see the confirmation.
         </div>
         <button id="submitBtn" class="btn-copper text-base">Submit inquiry</button>
       </div>
@@ -1707,11 +1707,11 @@ async function submitForm() {
   const originalLabel = btn ? btn.textContent : '';
   if (btn) {
     btn.disabled = true;
-    btn.textContent = 'Generating your report\u2026';
+    btn.textContent = 'Sending\u2026';
     btn.style.opacity = '0.65';
     btn.style.cursor = 'wait';
   }
-  showToast('Generating your water report\u2026');
+  showToast('Sending your inquiry\u2026');
 
   try {
     const res = await postJson({
